@@ -4,12 +4,12 @@
 
 **Blocked by:** 04, 07, 12a
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] 在标注集上跑 L0/L2/L1 三方案的文档级评测
-- [ ] 输出 per-aspect Precision/Recall/F1（六个维度各自）
-- [ ] 不只报 micro-average，也报 macro-average
-- [ ] 计算规则系统与 LLM 的一致率（LLM 作 silver standard）
-- [ ] 误差分析：分歧处的具体案例
-- [ ] 论文红线：不把文档级准确率当作 ABSA 准确率；不声称关键词锚定达到它没有的召回率
-- [ ] 输出论文可引用的表格格式
+- [x] 在标注集上跑 L0/L2/L1 三方案的文档级评测
+- [x] 输出 per-aspect Precision/Recall/F1（六个维度各自）
+- [x] 不只报 micro-average，也报 macro-average
+- [x] 计算规则系统与 LLM 的一致率（LLM 作 silver standard）
+- [x] 误差分析：分歧处的具体案例
+- [x] 论文红线：不把文档级准确率当作 ABSA 准确率；不声称关键词锚定达到它没有的召回率
+- [x] 输出论文可引用的表格格式

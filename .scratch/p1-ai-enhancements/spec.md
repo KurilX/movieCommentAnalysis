@@ -1,7 +1,8 @@
 # Spec: P1 —— 补 AI 能力（词典 / 性能 / 分词）
 
 > Feature slug: `p1-ai-enhancements`
-> Status: ready-for-agent
+> Status: **done-with-caveat**（2026-11-04 交付，7 张工单全部完成，提交 `3948cd6`）
+> ⚠️ **验收线未达**：Accuracy 实测 0.7698 < 目标 0.85。详见 `docs/项目状态审计.md` 3.1 节。
 > 来源：`docs/项目状态审计.md`（实跑验证）+ 两轮 grilling 共 16 个决策（Q1-Q16）
 > 前置：`.scratch/p0-runnable-system/spec.md`（P0 已收口，Web 全站可演示）
 

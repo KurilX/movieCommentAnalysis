@@ -107,9 +107,9 @@ cd D:\tools\mysql\bin
 cd "D:\Program Files\Projects\personal\movieCommentAnalysis"
 cd backend
 mvn spring-boot:run
-# 期望：Tomcat started on port 8080，无数据源错误
+# 期望：Tomcat started on port 8081，无数据源错误
 
 # 另一个终端
-curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
 # 期望：{"status":"UP"}
 ```

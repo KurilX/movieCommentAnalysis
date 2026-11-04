@@ -1,7 +1,9 @@
 # Spec: 基于方面级情感分析的电影评论分析系统设计与实现
 
 > Feature slug: `movie-comment-sentiment`
-> Status: ready-for-agent
+> Status: **mostly-done**（2026-11-04 复核：13 张工单中 12 张已交付，2 张部分，1 张未开工）
+> 部分：`05-l2-onnx-model`（分析器已实现，模型未导出）、`11-llm-async-arm`（已实现，未接 API Key）
+> 未开工：`12a-annotation-set`（标注集属 P2）
 > 来源：5 轮 grilling 的决策记录（`docs/决策记录.md`）+ 两轮子代理研究结论（`docs/决策记录.md` §9）
 > 关键决策：不训练模型，仅部署现成模型 + 预留训练管线；单人 8–10 周有效开发量。
 

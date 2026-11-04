@@ -4,10 +4,10 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `GET /api/movies/{id}/keywords` 返回 `{ keywords: [{ word, weight, count }] }`
-- [ ] 按权重降序，取前 30 个
-- [ ] 电影不存在或无评论时返回空列表（不报错）
-- [ ] 详情页词云能渲染
-- [ ] 测试：MockMvc 测关键词接口（非空、降序、字段名）
+- [x] `GET /api/movies/{id}/keywords` 返回 `{ keywords: [{ word, weight, count }] }`
+- [x] 按权重降序，取前 30 个
+- [x] 电影不存在或无评论时返回空列表（不报错）
+- [x] 详情页词云能渲染
+- [x] 测试：MockMvc 测关键词接口（非空、降序、字段名）

@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 03
 
-**Status:** ready-for-agent
+**Status:** partial（分析器已实现，ml/models 未导出，4 个测试跳过）
 
 - [ ] `ml/` 下 ONNX 导出脚本（Python，可复制粘贴即运行，含数据下载、导出、量化、验证）
 - [ ] 导出 `IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment`（apache-2.0）为 ONNX

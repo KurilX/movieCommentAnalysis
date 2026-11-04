@@ -1,7 +1,7 @@
 # Spec: P0 —— 让系统能跑起来
 
 > Feature slug: `p0-runnable-system`
-> Status: ready-for-agent
+> Status: **done**（2026-10 交付，7 张工单全部完成；提交见 `7183799` / `6e5e398` / `721192a`）
 > 来源：`docs/项目状态审计.md`（实跑验证）+ 5 轮 grilling 的决策记录
 > 前置：`.scratch/movie-comment-sentiment/spec.md`（系统总 spec）
 

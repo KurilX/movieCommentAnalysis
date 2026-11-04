@@ -4,7 +4,7 @@
 
 **Blocked by:** 08
 
-**Status:** ready-for-agent
+**Status:** partial（L1LlmAnalyzer + 异步臂已实现，未接 DashScope API Key）
 
 - [ ] `SentimentAnalyzer` 第三个实现（L1），调用 DashScope Java SDK
 - [ ] 同步返回 L0/L2 本地结果 + **异步补 L1** 结果

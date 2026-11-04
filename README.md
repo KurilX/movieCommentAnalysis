@@ -9,9 +9,9 @@
 ```bash
 # 1. 启动 MySQL（免安装版，见 docs/mysql安装步骤.md）
 #    公司电脑无法开虚拟化 → 不用 Docker
-D:\tools\mysql\bin\mysqld --console
+C:\Users\zepeng.huang\Downloads\mysql-26.7.0-winx64\mysql-26.7.0-winx64\bin\mysqld --console
 
-# 2. 启动后端（会自动建表 + 导入 4000 条数据 + 预计算分析结果）
+# 2. 启动后端（:8081，会自动建表 + 导入 4000 条数据 + 预计算分析结果）
 cd backend
 mvn spring-boot:run
 
@@ -21,9 +21,9 @@ npm install
 npm run dev
 ```
 
-访问 http://localhost:5173 · 后台账号 `admin` / `admin123`
+访问 http://localhost:5173 · 后台账号 `admin` / `admin123` · 健康检查 `http://localhost:8081/actuator/health`
 
-**首次启动约需 3 分钟**（导入 4000 条评论 + 预计算 4000 条分析 + 24000 条方面记录）。
+**首次启动约需 3 分钟**（导入 4000 条评论 + 预计算 4000 条分析 + 24000 条方面记录）。之后重启秒级；改完模型后点「一键重跑全库」约 4 秒。
 
 ## 目录结构
 
@@ -48,10 +48,10 @@ npm run dev
 
 ## 已实现
 
-- L0 规则情感引擎（情感词典 + 否定词 + 程度副词）
+- L0 规则情感引擎（382 词情感词典 + 否定词 + 程度副词），Accuracy **0.7698**
 - 三分类派生（置信度间隔法 + 规则信号）
 - 方面级情感分析（四维：剧情/演技/画面特效/配乐音效，贝叶斯平滑）
-- 关键词提取（TF-IDF）
+- 关键词提取（HanLP 分词 + 真 TF-IDF）
 - 评测框架（Accuracy / macro-F1 / 混淆矩阵 / θ 敏感性分析）
 - 用户体系（JWT + 双角色）
 - 8 个前端页面 + 后台管理
@@ -60,8 +60,7 @@ npm run dev
 
 - L2 ONNX 模型**未导出**（`ml/models` 不存在，4 个推理测试跳过）
 - L1 大模型**未接入**（需 API Key）
-- L0 词典仅约 60 词，**基线 Accuracy 37.4%**（低于全猜正面 84.4%，P1 需扩到 300-500 词）
-- 关键词提取未接 HanLP 分词，含 `the`/`and` 等噪声
+- **L0 Accuracy 0.7698 未达 0.85 目标**（瓶颈在语境消歧，不在词典规模；见审计文档）
 - "节奏""台词"两维覆盖率低于 5%，暂未展示
 - 标注集（300-500 条）未建
 
