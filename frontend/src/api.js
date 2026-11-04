@@ -69,5 +69,9 @@ export const adminApi = {
   crawlerTasks: () => api.get('/admin/crawler/tasks'),
   triggerCrawler: (data) => api.post('/admin/crawler/trigger', data),
   rerunAll: () => api.post('/admin/analysis/rerun-all'),
-  overview: () => api.get('/admin/overview')
+  overview: () => api.get('/admin/overview'),
+  // 完整版分词模型（可选增强，未下载时自动降级 portable）
+  // 下载改为后端异步执行，接口立即返回，因此不需要超长 timeout
+  modelStatus: () => api.get('/admin/model/status'),
+  downloadModel: () => api.post('/admin/model/download')
 }

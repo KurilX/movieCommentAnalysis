@@ -52,11 +52,20 @@ public class AnalysisService {
 
     // ========== 预计算 ==========
 
+    /** 批量写入的单批行数上限。 */
+    private static final int BATCH_SIZE = 500;
+
+    /** 方面维度数（纵表一条评论最多产生这么多行）。 */
+    private static final int ASPECT_COUNT = 6;
+
     /**
      * 重跑全库分析（幂等：覆盖而非新增）。
      *
-     * 性能：4000 条评论 × (1 analysis + 6 aspect) = 28000 行，
-     * 逐条 insert 太慢，这里用分批 + 事务提交。
+     * 性能：4000 条评论 × (1 analysis + 6 aspect) ≈ 28000 行。
+     * 逐条 insert 会产生 28000 次 SQL 往返（实测约 3 分钟），
+     * 这里改为「多行 VALUES 批量插入 + 每 BATCH_SIZE 行冲刷一次」。
+     *
+     * 事务：整体单事务（首行即全表清空，必须保证「要么全旧要么全新」）。
      *
      * @return 分析的评论条数
      */
@@ -66,18 +75,90 @@ public class AnalysisService {
         aspectMapper.delete(null);
 
         List<CommentEntity> comments = commentMapper.selectList(null);
-        int batch = 0;
+
+        List<CommentAnalysis> analysisBuf = new ArrayList<>(BATCH_SIZE);
+        List<CommentAspect> aspectBuf = new ArrayList<>(BATCH_SIZE * ASPECT_COUNT);
+        int done = 0;
+
         for (CommentEntity c : comments) {
-            analyzeAndSave(c);
-            if (++batch % 500 == 0) {
-                log.info("预计算进度：{}/{}", batch, comments.size());
+            Computed computed = compute(c);
+            analysisBuf.add(toAnalysisRow(computed));
+            aspectBuf.addAll(toAspectRows(computed));
+
+            // 分析结果与方面结果各自按批冲刷，避免任何一个缓冲区无限增长
+            if (analysisBuf.size() >= BATCH_SIZE) {
+                analysisMapper.insertBatch(analysisBuf);
+                analysisBuf.clear();
+            }
+            if (aspectBuf.size() >= BATCH_SIZE * ASPECT_COUNT) {
+                aspectMapper.insertBatch(aspectBuf);
+                aspectBuf.clear();
+            }
+
+            if (++done % 500 == 0) {
+                log.info("预计算进度：{}/{}", done, comments.size());
             }
         }
+
+        // 冲刷尾部不满一批的剩余行
+        if (!analysisBuf.isEmpty()) {
+            analysisMapper.insertBatch(analysisBuf);
+        }
+        if (!aspectBuf.isEmpty()) {
+            aspectMapper.insertBatch(aspectBuf);
+        }
+
         log.info("全库重跑完成：{} 条评论", comments.size());
         return comments.size();
     }
 
-    /** 对一条评论做分析并落库（覆盖已有结果）。 */
+    /** 单条评论的分析产物（纯内存，尚未落库）。 */
+    private record Computed(long commentId, AnalysisResult result, long elapsedMs,
+                            Map<String, AspectResult> aspects) {}
+
+    /** 跑分析器，纯内存计算，不碰数据库。 */
+    private Computed compute(CommentEntity comment) {
+        long start = System.currentTimeMillis();
+        AnalysisResult result = analyzer.analyze(comment.getText());
+        long elapsed = System.currentTimeMillis() - start;
+        return new Computed(comment.getId(), result, elapsed,
+                aspectAnalyzer.analyze(comment.getText()));
+    }
+
+    private CommentAnalysis toAnalysisRow(Computed computed) {
+        CommentAnalysis ca = new CommentAnalysis();
+        ca.setCommentId(computed.commentId());
+        ca.setPolarity(computed.result().polarity().name());
+        ca.setConfidence(computed.result().confidence());
+        ca.setTriggerWords(toJson(computed.result().triggerWords()));
+        ca.setAnalyzerName(analyzer.name());
+        ca.setRawJson(computed.result().rawJson());
+        ca.setElapsedMs(computed.elapsedMs());
+        ca.setCreatedAt(LocalDateTime.now());
+        return ca;
+    }
+
+    /** 把一条评论的方面结果摊平成纵表行。 */
+    private List<CommentAspect> toAspectRows(Computed computed) {
+        List<CommentAspect> rows = new ArrayList<>(computed.aspects().size());
+        LocalDateTime now = LocalDateTime.now();
+        for (Map.Entry<String, AspectResult> e : computed.aspects().entrySet()) {
+            AspectResult ar = e.getValue();
+            CommentAspect cas = new CommentAspect();
+            cas.setCommentId(computed.commentId());
+            cas.setAspectName(e.getKey());
+            cas.setMentioned(ar.mentioned());
+            cas.setPolarity(ar.polarity().name());
+            cas.setConfidence(ar.confidence());
+            cas.setSampleCount(ar.sampleCount());
+            cas.setTriggerWords(toJson(ar.triggerWords()));
+            cas.setCreatedAt(now);
+            rows.add(cas);
+        }
+        return rows;
+    }
+
+    /** 对一条评论做分析并落库（覆盖已有结果）。单条路径，不做批量。 */
     public AnalysisResult analyzeAndSave(CommentEntity comment) {
         // 清掉该评论的旧结果（保证幂等）
         analysisMapper.delete(new LambdaQueryWrapper<CommentAnalysis>()
@@ -85,36 +166,12 @@ public class AnalysisService {
         aspectMapper.delete(new LambdaQueryWrapper<CommentAspect>()
                 .eq(CommentAspect::getCommentId, comment.getId()));
 
-        long start = System.currentTimeMillis();
-        AnalysisResult result = analyzer.analyze(comment.getText());
-        long elapsed = System.currentTimeMillis() - start;
-
-        CommentAnalysis ca = new CommentAnalysis();
-        ca.setCommentId(comment.getId());
-        ca.setPolarity(result.polarity().name());
-        ca.setConfidence(result.confidence());
-        ca.setTriggerWords(toJson(result.triggerWords()));
-        ca.setAnalyzerName(analyzer.name());
-        ca.setRawJson(result.rawJson());
-        ca.setElapsedMs(elapsed);
-        ca.setCreatedAt(LocalDateTime.now());
-        analysisMapper.insert(ca);
-
-        Map<String, AspectResult> aspects = aspectAnalyzer.analyze(comment.getText());
-        for (Map.Entry<String, AspectResult> e : aspects.entrySet()) {
-            AspectResult ar = e.getValue();
-            CommentAspect cas = new CommentAspect();
-            cas.setCommentId(comment.getId());
-            cas.setAspectName(e.getKey());
-            cas.setMentioned(ar.mentioned());
-            cas.setPolarity(ar.polarity().name());
-            cas.setConfidence(ar.confidence());
-            cas.setSampleCount(ar.sampleCount());
-            cas.setTriggerWords(toJson(ar.triggerWords()));
-            cas.setCreatedAt(LocalDateTime.now());
+        Computed computed = compute(comment);
+        analysisMapper.insert(toAnalysisRow(computed));
+        for (CommentAspect cas : toAspectRows(computed)) {
             aspectMapper.insert(cas);
         }
-        return result;
+        return computed.result();
     }
 
     // ========== 电影级聚合（详情页用） ==========

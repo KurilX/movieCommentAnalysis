@@ -1,12 +1,13 @@
 server:
-  port: 8080
+  # 8080 被本机其他项目占用，改用 8081
+  port: 8081
 
 spring:
   application:
     name: movie-sentiment-backend
 
   datasource:
-    url: jdbc:mysql://localhost:3306/movie_sentiment?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
+    url: jdbc:mysql://localhost:3306/movie_sentiment?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&rewriteBatchedStatements=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver

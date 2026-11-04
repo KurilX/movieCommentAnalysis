@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  批量写入：一条 SQL 插入多行（单批上限由调用方控制，默认 500）。
+
+  为什么不用 MyBatis-Plus 的 saveBatch：saveBatch 本质仍是 JDBC batch，
+  这里是真正的多行 VALUES，SQL 往返次数从 N 降到 N/批大小。
+-->
+<mapper namespace="com.moviereview.movie.CommentAnalysisMapper">
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO comment_analysis
+            (comment_id, polarity, confidence, trigger_words, analyzer_name, raw_json, elapsed_ms, created_at)
+        VALUES
+        <foreach collection="list" item="it" separator=",">
+            (#{it.commentId}, #{it.polarity}, #{it.confidence}, #{it.triggerWords},
+             #{it.analyzerName}, #{it.rawJson}, #{it.elapsedMs}, #{it.createdAt})
+        </foreach>
+    </insert>
+
+</mapper>

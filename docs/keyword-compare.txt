@@ -1,0 +1,35 @@
+﻿样本：电影 M0219724e，共 200 条评论
+
+=== 旧实现（空格硬切 + 仅 TF）===
+  you          4
+  world        4
+  盗梦空间         3
+  what         3
+  土拔鼠日         2
+  如果           2
+  自己1人         2
+  时空线索         2
+  科幻           2
+  你会做什么        2
+  Moon         2
+  不改變          2
+  平行世界         2
+  in           2
+  is           2
+
+=== 新实现（HanLP 分词 + TF×IDF）===
+  世界           weight=1.000 count=34
+  平行           weight=0.762 count=23
+  结局           weight=0.720 count=23
+  故事           weight=0.601 count=17
+  喜欢           weight=0.551 count=15
+  剧情           weight=0.540 count=15
+  有点           weight=0.540 count=15
+  时间           weight=0.509 count=13
+  结尾           weight=0.504 count=14
+  源代码          weight=0.497 count=13
+  不错           weight=0.459 count=12
+  导演           weight=0.459 count=12
+  穿越           weight=0.459 count=12
+  片子           weight=0.449 count=12
+  盗梦           weight=0.430 count=11

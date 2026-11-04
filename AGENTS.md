@@ -11,11 +11,11 @@ Java 后端 + Vue 前端，做中文影评的方面级情感分析与可视化�
 # MySQL（免安装版，非 Docker）
 C:\Users\zepeng.huang\Downloads\mysql-26.7.0-winx64\mysql-26.7.0-winx64\bin\mysqld --console
 
-cd backend && mvn spring-boot:run    # :8080，首次约 3 分钟（导入+预计算）
+cd backend && mvn spring-boot:run    # :8081，首次约 3 分钟（导入+预计算）
 cd frontend && npm run dev           # :5173
 ```
 
-后台账号 `admin` / `admin123`。健康检查 `curl localhost:8080/actuator/health`。
+后台账号 `admin` / `admin123`。健康检查 `curl localhost:8081/actuator/health`。
 
 ## 技术栈
 
@@ -45,13 +45,20 @@ cd frontend && npm run dev           # :5173
 
 ## 当前状态与下一步
 
-**已完成**：L0 规则引擎、三分类派生、方面级分析（四维）、关键词、评测框架、用户体系、8 个前端页面、后台管理。136 个测试通过。
+**已完成**：L0 规则引擎、三分类派生、方面级分析（四维）、关键词、评测框架、用户体系、8 个前端页面、后台管理。**181 个测试通过**（4 个跳过）。
 
-**未完成（P1/P2）**：
+**2026-11-04 完成的 P1 项**：
+- **情感词典**：从 43 词硬编码搬到 `backend/src/main/resources/sentiment-lexicon.json`，扩到 **382 词**（含影视领域词）。改词表只改 JSON，不需要动 Java 代码。
+- **L0 规则**：新增三条 —— 无信号默认倾向、中性标记词让位、褒贬混合判中性。Accuracy 0.3740 → **0.7698**（三组归因数字见审计文档）。
+- **关键词**：接入 HanLP portable（离线），权重补全为真正的 TF×IDF。词云不再有 `the`/纯数字/未分词长串。
+- **一键重跑**：改多行 VALUES 批量插入（单批 500 行），**180 秒 → 4~5 秒**。
+- **可选完整版分词**：后台数据管理页有下载按钮，未下载时自动降级 portable（演示永远走 portable）。
+
+**未完成**：
 - L2 ONNX 模型**未导出**（`ml/models` 不存在，4 个测试跳过）
 - L1 大模型**未接入**（需 API Key）
-- **L0 基线 Accuracy 仅 37.4%**（词典仅 60 词，需扩到 300-500）
-- 关键词未接 HanLP 分词，含 `the`/`and` 噪声
-- 一键重跑全库约 3 分钟（需改批量插入）
+- **L0 Accuracy 0.7698 未达 spec 的 0.85 验收线**（瓶颈在语境消歧，不在词典规模；详见审计文档 3.1 节）
+- 「节奏」「台词」两维度覆盖率仍低于 5% 阈值，未替换
 
 详见 `docs/项目状态审计.md`。
+

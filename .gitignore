@@ -46,3 +46,7 @@ ml/**/*.onnx
 ml/**/*.bin
 ml/**/*.pt
 ml/**/*.safetensors
+
+# HanLP 完整版数据包（几百 MB，由后台按钮按需下载，不进 Git）
+backend/hanlp-data/
+hanlp-data/

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  批量写入：一条 SQL 插入多行（单批上限由调用方控制，默认 500）。
+
+  方面级结果用纵表（一条评论 × 一个维度一行），全库约 24000 行，
+  逐条 insert 是重跑耗时的另一半，因此与分析结果一起改批量。
+-->
+<mapper namespace="com.moviereview.movie.CommentAspectMapper">
+
+    <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO comment_aspect
+            (comment_id, aspect_name, mentioned, polarity, confidence, sample_count, trigger_words, created_at)
+        VALUES
+        <foreach collection="list" item="it" separator=",">
+            (#{it.commentId}, #{it.aspectName}, #{it.mentioned}, #{it.polarity},
+             #{it.confidence}, #{it.sampleCount}, #{it.triggerWords}, #{it.createdAt})
+        </foreach>
+    </insert>
+
+</mapper>

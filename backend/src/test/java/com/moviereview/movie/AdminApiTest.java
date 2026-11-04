@@ -184,4 +184,48 @@ class AdminApiTest {
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isForbidden());
     }
+
+    // ========== 完整版分词模型（工单 06） ==========
+
+    @Test
+    @DisplayName("GET /api/admin/model/status - 管理员可查状态，含生效分词器")
+    void modelStatus_returnsStateAndTokenizer() throws Exception {
+        mockMvc.perform(get("/api/admin/model/status")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").exists())
+                .andExpect(jsonPath("$.activeTokenizer").exists())
+                .andExpect(jsonPath("$.downloading").exists());
+    }
+
+    @Test
+    @DisplayName("GET model/status - 未下载完整版时生效分词器为 portable（降级可见）")
+    void modelStatus_defaultsToPortable() throws Exception {
+        mockMvc.perform(get("/api/admin/model/status")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.activeTokenizer").value("hanlp-portable"));
+    }
+
+    @Test
+    @DisplayName("权限：普通用户访问模型状态接口返回 403")
+    void modelStatus_asNormalUser_returns403() throws Exception {
+        var user = userService.register("user3_test_" + System.nanoTime(), "password123", UserRole.USER);
+        String userToken = jwtUtil.generateToken(user.getId(), user.getUsername(), "USER");
+
+        mockMvc.perform(get("/api/admin/model/status")
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("权限：普通用户触发模型下载返回 403")
+    void downloadModel_asNormalUser_returns403() throws Exception {
+        var user = userService.register("user4_test_" + System.nanoTime(), "password123", UserRole.USER);
+        String userToken = jwtUtil.generateToken(user.getId(), user.getUsername(), "USER");
+
+        mockMvc.perform(post("/api/admin/model/download")
+                        .header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isForbidden());
+    }
 }
